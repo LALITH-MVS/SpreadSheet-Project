@@ -1,36 +1,151 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Real-Time Collaborative Spreadsheet
 
-## Getting Started
+A lightweight real-time collaborative spreadsheet built using **Next.js, TypeScript, TailwindCSS, Firebase, and Zustand**.
 
-First, run the development server:
+This project is inspired by **Google Sheets**, focusing on real-time collaboration, clean architecture, and efficient state management.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+# Features
+
+### Spreadsheet Grid
+- Dynamic spreadsheet grid
+- Row numbers and column headers
+- Editable cells
+- Google Sheets–like UI
+
+### Real-time Collaboration
+- Multiple users can edit the same document
+- Changes sync instantly across sessions
+
+### Presence
+- Shows active collaborators inside the document
+
+### State Management
+- Global spreadsheet state using **Zustand**
+
+### Formula Support
+Basic formula support such as:
+
+```
+=SUM(A1:A5)
+=A1+B1
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Dashboard
+- List of spreadsheet documents
+- Create/open documents
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Tech Stack
 
-## Learn More
+Frontend:
+- Next.js (App Router)
+- React
+- TypeScript
+- Tailwind CSS
 
-To learn more about Next.js, take a look at the following resources:
+State Management:
+- Zustand
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Backend:
+- Firebase Firestore
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Realtime Sync:
+- Firestore realtime listeners
 
-## Deploy on Vercel
+Deployment:
+- Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Architecture
+
+The application follows a layered architecture:
+
+```
+UI (React Components)
+        ↓
+State Management (Zustand)
+        ↓
+Realtime Sync (Firebase)
+        ↓
+Database (Firestore)
+```
+
+### Component Structure
+
+```
+components/
+   spreadsheet/
+      Cell.tsx
+      Row.tsx
+      Spreadsheet.tsx
+store/
+   sheetStore.ts
+lib/
+   firebase.ts
+   firestore.ts
+```
+
+---
+
+# Getting Started
+
+### Install dependencies
+
+```
+npm install
+```
+
+### Run development server
+
+```
+npm run dev
+```
+
+Open:
+
+```
+http://localhost:3000
+```
+
+---
+
+# Real-Time Behaviour
+
+The application uses **Firestore realtime listeners** to synchronize spreadsheet updates across multiple sessions.
+
+When a cell is updated:
+
+1. Zustand updates the local state
+2. Firebase writes the change to Firestore
+3. Firestore notifies other connected clients
+4. Other clients update their state automatically
+
+---
+
+# Future Improvements
+
+- Drag-to-fill functionality
+- Column resizing
+- Keyboard navigation
+- Advanced formula parser
+- Offline support
+
+---
+
+# Demo
+
+The application demonstrates:
+
+- Realtime synchronization
+- Multi-user editing
+- Spreadsheet UI
+
+---
+
+# Author
+
+Lalith MVS
