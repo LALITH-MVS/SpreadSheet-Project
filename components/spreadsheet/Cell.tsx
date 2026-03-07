@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSheetStore } from "@/store/sheetStore";
+import { saveCell } from "@/lib/firestore"; // ✅ NEW IMPORT
 
 export default function Cell({ cellId }: { cellId: string }) {
   const [active, setActive] = useState(false);
@@ -9,7 +10,6 @@ export default function Cell({ cellId }: { cellId: string }) {
   const value = useSheetStore((state) => state.cells[cellId] || "");
   const setCell = useSheetStore((state) => state.setCell);
   const cells = useSheetStore((state: any) => state.cells);
-  
 
   return (
     <div
@@ -19,7 +19,16 @@ export default function Cell({ cellId }: { cellId: string }) {
     >
       <input
         value={value}
-        onChange={(e) => setCell(cellId, e.target.value)}
+
+        // ✅ UPDATED onChange
+        onChange={(e) => {
+          const newValue = e.target.value;
+
+          setCell(cellId, newValue); // Zustand update
+          saveCell(cellId, newValue); // Firestore update
+          console.log("Saving cell:", cellId, newValue);
+        }}
+
         onFocus={() => setActive(true)}
         onBlur={() => setActive(false)}
         className={`w-full h-full px-2 outline-none bg-white text-black ${

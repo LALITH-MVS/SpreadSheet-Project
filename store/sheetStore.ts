@@ -3,6 +3,7 @@ import { create } from "zustand";
 type SheetState = {
   cells: Record<string, string>;
   setCell: (cellId: string, value: string) => void;
+  setCells: (cells: Record<string, string>) => void;
 };
 
 export const useSheetStore = create<SheetState>((set) => ({
@@ -15,4 +16,6 @@ export const useSheetStore = create<SheetState>((set) => ({
         [cellId]: value,
       },
     })),
+
+  setCells: (cells) => set({ cells }),
 }));
