@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-
+import { getFirestore } from "firebase/firestore";
 const firebaseConfig = {
   apiKey: "AIzaSyAPt0o-qHLF7kdPUdj4OFtmeXGiIaFrsfY",
   authDomain: "spreadsheet-b106c.firebaseapp.com",
@@ -10,3 +10,4 @@ const firebaseConfig = {
 };
 
 export const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);

@@ -1,38 +1,88 @@
 import {
-  getFirestore,
-  collection,
   doc,
+  getDoc,
   setDoc,
   onSnapshot,
+  collection,
+  getDocs,
+  updateDoc
 } from "firebase/firestore";
 
-import { app } from "./firebase";
-
-export const db = getFirestore(app);
+import { db } from "./firebase";
 
 /*
-  Save a single cell to Firestore
+Load sheet once
 */
-export const saveCell = async (cellId: string, value: string) => {
-  await setDoc(doc(db, "cells", cellId), {
-    value,
+export const loadSheet = async (sheetId: string) => {
+  const docRef = doc(db, "sheets", sheetId);
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+    return docSnap.data().cells || {};
+  }
+
+  return {};
+};
+
+/*
+Save sheet
+*/
+export const saveSheet = async (
+  sheetId: string,
+  cells: Record<string, string>
+) => {
+  const docRef = doc(db, "sheets", sheetId);
+
+  await setDoc(
+    docRef,
+    { cells },
+    { merge: true }
+  );
+};
+
+/*
+Realtime listener
+*/
+export const subscribeSheet = (
+  sheetId: string,
+  callback: (cells: Record<string, string>) => void
+) => {
+  const docRef = doc(db, "sheets", sheetId);
+
+  return onSnapshot(docRef, (snapshot) => {
+    const data = snapshot.data();
+
+    if (data?.cells) {
+      callback(data.cells);
+    }
   });
 };
 
 /*
-  Listen to all cells in realtime
+Get all sheets
 */
-export const subscribeCells = (callback: (cells: Record<string, string>) => void) => {
-  const cellsRef = collection(db, "cells");
+export const getSheets = async () => {
+  const snapshot = await getDocs(collection(db, "sheets"));
 
-  return onSnapshot(cellsRef, (snapshot) => {
-    const cells: Record<string, string> = {};
+  const sheets: any[] = [];
 
-    snapshot.forEach((document) => {
-      const data = document.data();
-      cells[document.id] = data.value;
+  snapshot.forEach((docItem) => {
+    sheets.push({
+      id: docItem.id,
+      ...docItem.data(),
     });
+  });
 
-    callback(cells);
+  return sheets;
+};
+
+/*
+Update sheet name
+*/
+export const updateSheetName = async (sheetId: string, name: string) => {
+  const sheetRef = doc(db, "sheets", sheetId);
+
+  await updateDoc(sheetRef, {
+    name: name,
   });
 };

@@ -1,9 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
 import Row from "./Row";
-import { subscribeCells } from "@/lib/firestore";
-import { useSheetStore } from "@/store/sheetStore";
 
 const ROWS = 50;
 const COLS = 20;
@@ -14,17 +11,6 @@ export default function Spreadsheet() {
   const cols = Array.from({ length: COLS }, (_, i) =>
     String.fromCharCode(65 + i)
   );
-
-  const setCells = useSheetStore((state) => state.setCells);
-
-  // 🔹 Realtime Firestore listener
-  useEffect(() => {
-    const unsubscribe = subscribeCells((cells) => {
-      setCells(cells);
-    });
-
-    return () => unsubscribe();
-  }, [setCells]);
 
   return (
     <div className="w-full h-screen overflow-auto">
