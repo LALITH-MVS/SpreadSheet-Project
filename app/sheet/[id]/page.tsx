@@ -1,26 +1,43 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Spreadsheet from "@/components/spreadsheet/Spreadsheet";
 import { subscribeSheet, updateSheetName } from "@/lib/firestore";
 import { useSheetStore } from "@/store/sheetStore";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function SheetPage() {
 
   const params = useParams();
+  const router = useRouter();
   const sheetId = params.id as string;
 
   const setCells = useSheetStore((state) => state.setCells);
 
   const [name, setName] = useState("Untitled Sheet");
 
+  // 🔒 Protect sheet (login required)
   useEffect(() => {
 
-    // Clear old sheet data
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+
+      if (!user) {
+        router.push("/login");
+      }
+
+    });
+
+    return () => unsubscribeAuth();
+
+  }, [router]);
+
+  // Load sheet cells
+  useEffect(() => {
+
     setCells({});
 
-    // Start realtime listener
     const unsubscribe = subscribeSheet(
       sheetId,
       (cells: Record<string, string>) => {
