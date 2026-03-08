@@ -1,14 +1,23 @@
 "use client";
 
-import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useSheetStore } from "@/store/sheetStore";
 import { saveSheet } from "@/lib/firestore";
 import { evaluateFormula } from "@/lib/formulaEngine";
 
-export default function Cell({ cellId }: { cellId: string }) {
+export default function Cell({
+  cellId,
+  activeCell,
+  setActiveCell,
+  onSaveStatusChange,
+}: {
+  cellId: string;
+  activeCell: string;
+  setActiveCell: (id: string) => void;
+  onSaveStatusChange?: (status: "saving" | "saved") => void;
+}) {
 
-  const [active, setActive] = useState(false);
+  const active = activeCell === cellId;
 
   const setCell = useSheetStore((state) => state.setCell);
   const cells = useSheetStore((state: any) => state.cells);
@@ -34,8 +43,11 @@ export default function Cell({ cellId }: { cellId: string }) {
       <input
         value={active ? rawValue : displayValue}
 
-        onChange={(e) => {
+        onChange={async (e) => {
           const newValue = e.target.value;
+
+          // 🔴 Trigger saving indicator
+          onSaveStatusChange?.("saving");
 
           setCell(cellId, newValue);
 
@@ -44,13 +56,15 @@ export default function Cell({ cellId }: { cellId: string }) {
             [cellId]: newValue,
           };
 
-          saveSheet(sheetId, updatedCells);
+          await saveSheet(sheetId, updatedCells);
 
-          console.log("Saving cell:", sheetId, cellId, newValue);
+          // 🟢 Show saved indicator after short delay
+          setTimeout(() => {
+            onSaveStatusChange?.("saved");
+          }, 800);
         }}
 
-        onFocus={() => setActive(true)}
-        onBlur={() => setActive(false)}
+        onFocus={() => setActiveCell(cellId)}
 
         className={`w-full h-full px-2 outline-none bg-white text-black ${
           active ? "border-2 border-blue-500" : "border-none"
@@ -60,7 +74,7 @@ export default function Cell({ cellId }: { cellId: string }) {
       {active && (
         <div className="absolute w-2.5 h-2.5 bg-blue-500 rounded-full -bottom-1 -right-1"></div>
       )}
-
     </div>
   );
 }
+

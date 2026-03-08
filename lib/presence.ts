@@ -4,7 +4,8 @@ import {
   setDoc,
   serverTimestamp,
   collection,
-  onSnapshot
+  onSnapshot,
+  deleteDoc
 } from "firebase/firestore";
 
 /* Register user presence */
@@ -47,5 +48,18 @@ export const subscribePresence = (
     callback(users);
 
   });
+
+};
+
+/* Remove user presence when leaving */
+
+export const removePresence = async (
+  sheetId: string,
+  userId: string
+) => {
+
+  await deleteDoc(
+    doc(db, "presence", sheetId, "users", userId)
+  );
 
 };

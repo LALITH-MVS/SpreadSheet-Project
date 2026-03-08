@@ -4,7 +4,16 @@ import Cell from "./Cell";
 
 const COLS = 20;
 
-export default function Row({ rowIndex }: { rowIndex: number }) {
+export default function Row({
+  rowIndex,
+  activeCell,
+  setActiveCell,
+}: {
+  rowIndex: number;
+  activeCell: string;
+  setActiveCell: (id: string) => void;
+}) {
+
   const cols = Array.from({ length: COLS }, (_, i) =>
     String.fromCharCode(65 + i)
   );
@@ -20,7 +29,12 @@ export default function Row({ rowIndex }: { rowIndex: number }) {
       </div>
 
       {cols.map((col) => (
-        <Cell key={col} cellId={`${col}${rowIndex}`} />
+        <Cell
+          key={col}
+          cellId={`${col}${rowIndex}`}
+          activeCell={activeCell}
+          setActiveCell={setActiveCell}
+        />
       ))}
     </div>
   );

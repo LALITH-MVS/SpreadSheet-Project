@@ -9,7 +9,7 @@ import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
 /* NEW IMPORTS */
-import { registerPresence, subscribePresence } from "@/lib/presence";
+import { registerPresence, subscribePresence, removePresence } from "@/lib/presence";
 import { getRandomColor } from "@/lib/userColor";
 
 export default function SheetPage() {
@@ -22,8 +22,11 @@ export default function SheetPage() {
 
   const [name, setName] = useState("Untitled Sheet");
 
-  /* NEW STATE FOR ACTIVE USERS */
+  /* ACTIVE USERS STATE */
   const [users, setUsers] = useState<any[]>([]);
+
+  /* SAVE STATUS STATE */
+  const [saveStatus, setSaveStatus] = useState("saved");
 
   // 🔒 Protect sheet (login required)
   useEffect(() => {
@@ -40,7 +43,7 @@ export default function SheetPage() {
 
   }, [router]);
 
-  // Load sheet cells
+  // 📡 Load sheet cells + saving indicator
   useEffect(() => {
 
     setCells({});
@@ -48,7 +51,16 @@ export default function SheetPage() {
     const unsubscribe = subscribeSheet(
       sheetId,
       (cells: Record<string, string>) => {
+
+        setSaveStatus("saving");
+
         setCells(cells);
+
+        // delay saved indicator so user can see it
+        setTimeout(() => {
+          setSaveStatus("saved");
+        }, 1000);
+
       }
     );
 
@@ -71,6 +83,29 @@ export default function SheetPage() {
       user.displayName || "User",
       color
     );
+
+    return () => {
+      removePresence(sheetId, user.uid);
+    };
+
+  }, [sheetId]);
+
+  /* REMOVE USER WHEN BROWSER CLOSES */
+  useEffect(() => {
+
+    const user = auth.currentUser;
+
+    if (!user) return;
+
+    const handleUnload = () => {
+      removePresence(sheetId, user.uid);
+    };
+
+    window.addEventListener("beforeunload", handleUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleUnload);
+    };
 
   }, [sheetId]);
 
@@ -100,15 +135,42 @@ export default function SheetPage() {
   return (
     <div>
 
-      {/* Editable Sheet Name */}
-      <input
-        value={name}
-        onChange={handleNameChange}
-        className="text-xl p-4 font-semibold outline-none border-b"
-      />
+      {/* HEADER WITH SAVE STATUS */}
+      <div className="flex items-center justify-between px-4 py-2 border-b bg-white">
+
+        <input
+          value={name}
+          onChange={handleNameChange}
+          className="text-xl font-semibold outline-none"
+        />
+
+        {/* SAVE STATUS UI */}
+        <div className="flex items-center gap-2 text-sm font-medium">
+
+          {saveStatus === "saving" && (
+            <>
+              <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+              <span className="text-orange-500">Saving...</span>
+            </>
+          )}
+
+          {saveStatus === "saved" && (
+            <>
+              <span className="w-2 h-2 rounded-full bg-green-500"></span>
+              <span className="text-green-600">Saved</span>
+            </>
+          )}
+
+        </div>
+
+      </div>
 
       {/* ACTIVE USERS UI */}
       <div className="flex gap-4 p-3 items-center">
+
+        <p className="text-xs text-black font-bold px-3">
+          Active users
+        </p>
 
         {users.map((user, index) => (
 
