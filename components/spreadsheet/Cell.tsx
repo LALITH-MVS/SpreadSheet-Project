@@ -25,11 +25,14 @@ export default function Cell({
   const params = useParams();
   const sheetId = params.id as string;
 
-  const rawValue = cells[cellId] || "";
+  // NEW CELL STRUCTURE SUPPORT
+  const cellData = cells[cellId] || { value: "" };
+
+  const rawValue = cellData.value || "";
 
   let displayValue = rawValue;
 
-  // Only calculate formula when NOT editing
+  // Evaluate formula when NOT editing
   if (!active && rawValue.startsWith("=")) {
     displayValue = evaluateFormula(rawValue, cells);
   }
@@ -41,34 +44,45 @@ export default function Cell({
       }`}
     >
       <input
+        data-cell={cellId}   // ⭐ IMPORTANT: used for keyboard navigation focus
         value={active ? rawValue : displayValue}
 
         onChange={async (e) => {
+
           const newValue = e.target.value;
 
-          // 🔴 Trigger saving indicator
+          // Saving indicator
           onSaveStatusChange?.("saving");
 
           setCell(cellId, newValue);
 
           const updatedCells = {
             ...cells,
-            [cellId]: newValue,
+            [cellId]: {
+              ...cells[cellId],
+              value: newValue,
+            },
           };
 
           await saveSheet(sheetId, updatedCells);
 
-          // 🟢 Show saved indicator after short delay
           setTimeout(() => {
             onSaveStatusChange?.("saved");
           }, 800);
+
         }}
 
         onFocus={() => setActiveCell(cellId)}
 
-        className={`w-full h-full px-2 outline-none bg-white text-black ${
+        className={`w-full h-full px-2 outline-none bg-white ${
           active ? "border-2 border-blue-500" : "border-none"
         }`}
+
+        style={{
+          fontWeight: cellData.bold ? "bold" : "normal",
+          fontStyle: cellData.italic ? "italic" : "normal",
+          color: cellData.color || "#000000",
+        }}
       />
 
       {active && (
@@ -77,4 +91,3 @@ export default function Cell({
     </div>
   );
 }
-

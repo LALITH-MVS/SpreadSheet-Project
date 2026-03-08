@@ -50,7 +50,7 @@ export default function SheetPage() {
 
     const unsubscribe = subscribeSheet(
       sheetId,
-      (cells: Record<string, string>) => {
+      (cells: Record<string, any>) => {
 
         setSaveStatus("saving");
 
